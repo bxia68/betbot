@@ -2,17 +2,14 @@ const Discord = require('discord.js');
 const eco = require("discord-economy");
 const client = new Discord.Client();
 const Enmap = require("enmap");
+const config = require("./config.json");
 
 client.on('ready', () => {
   console.log(`Logged in`);
 });
 
-const settings = {
-  prefix: '',
-}
-
 client.on('message', async message => {
-  if (!message.content.startsWith(settings.prefix) || message.author.bot) return;
+  if (!message.content.startsWith(config.prefix) || message.author.bot) return;
 
   var command = message.content.toLowerCase().slice(settings.prefix.length).split(' ')[0];
 
@@ -129,4 +126,4 @@ function getUserFromMention(mention) {
 	}
 }
 
-client.login('kek');
+client.login(config.token);
