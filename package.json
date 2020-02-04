@@ -1,0 +1,20 @@
+{
+  "name": "betbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bill Xia",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "discord-economy": "^1.2.2",
+    "discord.js": "^11.5.1",
+    "enmap": "^5.2.4",
+    "eris": "^0.11.2",
+    "express": "^4.17.1",
+    "keyv": "^4.0.0"
+  }
+}
