@@ -4,14 +4,19 @@ const client = new Discord.Client();
 const Enmap = require("enmap");
 const config = require("./config.json");
 
+client.bets = new Enmap({name: "bets"});
+
 client.on('ready', () => {
   console.log(`Logged in`);
 });
 
 client.on('message', async message => {
+  // const key = `${message.guild.id}`;
+  const key = 888;
+
   if (!message.content.startsWith(config.prefix) || message.author.bot) return;
 
-  var command = message.content.toLowerCase().slice(settings.prefix.length).split(' ')[0];
+  var command = message.content.toLowerCase().slice(config.prefix.length).split(' ')[0];
 
   var args = message.content.split(' ').slice(1);
 
@@ -29,101 +34,105 @@ client.on('message', async message => {
       break;
     case "c":
       //communism
-      if (!message.member.roles.find(role => role.name === 'beb bebster')) return message.channel.send("kek");
+      if (!message.member.roles.find(role => role.name === 'beb bebster')) return message.channel.send("hek off non gamer");
       switch (args[0]) {
         case "a":
           message.guild.members.forEach(async member => {
-            var output = await eco.AddToBalance(member.user.id, args[1]);
+            // if(!member.user.bot)
+              var output = await eco.AddToBalance(member.user.id, args[1]);
           });
           return message.channel.send(`big daddy has decreed that we all get ${args[1]} bbbweeebs.`);
         case "s":
           message.guild.members.forEach(async member => {
-            var output = await eco.SetBalance(member.user.id, args[1]);
+            // if(!member.user.bot)
+              var output = await eco.SetBalance(member.user.id, args[1]);
           });
           return message.channel.send(`big daddy has decreed that we all now have ${args[1]} bbbweeebs.`);
       }
       break;
     case "a":
       //add
-      if (!message.member.roles.find(role => role.name === 'beb bebster')) return message.channel.send("kek");
+      if (!message.member.roles.find(role => role.name === 'beb bebster')) return message.channel.send("hek off non gamer");
 
-  		const user = getUserFromMention(args[0]);
+      const user = getUserFromMention(args[0]);
       var output = await eco.AddToBalance(user.id, args[1])
       message.channel.send(`big daddy has decreed that ${user.username} will receive ${args[1]} beewewebs`)
       break;
     case 'l':
     case "leaderboard":
       eco.Leaderboard({
-              limit: 10,
-            }).then(async users => {
+        limit: 10,
+      }).then(async users => {
         const embed = new Discord.RichEmbed()
-        .setTitle("Leaderboard")
-        .setColor(0x00AE86);
+          .setTitle("Leaderboard")
+          .setColor(0x00AE86);
         var embedDescription = '';
         for (var i = 0; i < users.length; i++) {
           if (users[i]) var currentUser = await client.fetchUser(users[i].userid)
           embedDescription += `${i + 1}. ${currentUser.tag} ${users[i].balance} bwebs \n`;
         }
         embed.setDescription(embedDescription);
-        message.channel.send({embed});
+        message.channel.send({
+          embed
+        });
       });
-     break;
-     case "p":
-       //make pool
-       if (!message.member.roles.find(role => role.name === 'beb bebster')) return message.channel.send("kek");
-       if (message.guild) {
-           // Let's simplify the `key` part of this.
-           const key = `${message.guild.id}-${message.author.id}`;
-           client.points.ensure(key, {
-             user: message.author.id,
-             guild: message.guild.id,
-             points: 0,
-             level: 1
-           });
-           client.points.inc(key, "points");
-             }
+      break;
+    case "p":
+      //make pool
+      if (!message.member.roles.find(role => role.name === 'beb bebster')) return message.channel.send("hek off non gamer");
+      if (message.guild) {
+        // Let's simplify the `key` part of this.
+        client.bets.ensure(key, {
+          bets: []
+        });
+        client.bets.push(key, new Bet(getUserFromMention(args[0]).id, getUserFromMention(args[1]).id, args[2]), "bets");
+      }
+      console.log(client.bets.get(key));
 
-       break;
-
+      break;
+    case "pp":
+      var bets = client.bets.get(key).bets;
+      var i;
+      for (i = 0; i < bets.length; i++) {
+        if (args[0] == 1) {
+          var output = await eco.AddToBalance(bets[i].user1, bets[i].price);
+          var output = await eco.AddToBalance(bets[i].user2, -bets[i].price);
+        } else {
+          var output = await eco.AddToBalance(bets[i].user2, bets[i].price);
+          var output = await eco.AddToBalance(bets[i].user1, -bets[i].price);
+        }
+      }
+      client.bets.set(key, {
+        guild: message.guild.id,
+        bets: []
+      });
+      console.log(client.bets.get(key));
+      break;
     case "test":
       break;
     default:
   }
 });
-
-// function makePool() {
-//   return "kek";
-// }
-//
-// class Pool {
-//   constructor() {
-//     this.pool = [];
-//   }
-//
-//   function joinPool(member) {
-//     this.pool.add(member);
-//   }
-// }
-//
-// class Bet {
-//   constructor(user, price) {
-//     this.user = user;
-//     this.price = price;
-//   }
-// }
+class Bet {
+  constructor(user1, user2, price) {
+    this.user1 = user1;
+    this.user2 = user2;
+    this.price = price;
+  }
+}
 
 function getUserFromMention(mention) {
-	if (!mention) return;
+  if (!mention) return;
 
-	if (mention.startsWith('<@') && mention.endsWith('>')) {
-		mention = mention.slice(2, -1);
+  if (mention.startsWith('<@') && mention.endsWith('>')) {
+    mention = mention.slice(2, -1);
 
-		if (mention.startsWith('!')) {
-			mention = mention.slice(1);
-		}
+    if (mention.startsWith('!')) {
+      mention = mention.slice(1);
+    }
 
-		return client.users.get(mention);
-	}
+    return client.users.get(mention);
+  }
 }
 
 client.login(config.token);
